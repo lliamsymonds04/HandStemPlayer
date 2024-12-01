@@ -4,13 +4,18 @@ import numpy as np
 import pyautogui
 import time
 
-from mediapipe import solutions
+from PointUtil import *
 
 BaseOptions = mp.tasks.BaseOptions
 HandLandmarker = mp.tasks.vision.HandLandmarker
 HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
 HandLandmarkerResult = mp.tasks.vision.HandLandmarkerResult
 VisionRunningMode = mp.tasks.vision.RunningMode
+
+INDEX_FINGER_MAX_ANGLE = 90
+INDEX_FINGER_MIN_ANGLE = 20
+MIDDLE_FINGER_MAX_ANGLE = 90
+MIDDLE_FINGER_MIN_ANGLE = 20
 
 class HandTracker:
     def __init__(self, model_path: str, camera_size_factor:int=0.6):
@@ -24,6 +29,12 @@ class HandTracker:
         self.mp_hands = mp.solutions.hands
         self.mp_drawing = mp.solutions.drawing_utils
         self.landmark_result = None
+
+        # Setup the finger variables
+        self.left_index_finger_closure = 0
+        self.right_index_finger_closure = 0
+        self.left_middle_finger_closure = 0
+        self.right_middle_finger_closure = 0
 
         # Setup the OpenCV window
         cv2.namedWindow("Hand Tracking")
@@ -80,6 +91,35 @@ class HandTracker:
                         for landmark in landmarks:
                             color = hand == "Right" and (0, 0, 255) or (0,255,0)
                             cv2.circle(mp_image_np, (int(landmark.x * width), int(landmark.y * height)), 10, color, cv2.FILLED)
+
+                        #joints of importance
+                        thumb_tip = landmarks[4]
+                        index_tip = landmarks[8]
+                        middle_tip = landmarks[12]
+                        index_knuckle = landmarks[5]
+                        middle_knuckle = landmarks[9]
+
+                        #calc angles
+                        index_finger_angle = get_angle_between_points(thumb_tip, index_tip, index_knuckle)
+                        middle_finger_angle = get_angle_between_points(thumb_tip, middle_tip, middle_knuckle)
+
+                        #clamp the angles
+                        index_finger_closure = max(min(index_finger_angle, INDEX_FINGER_MAX_ANGLE), INDEX_FINGER_MIN_ANGLE)/(INDEX_FINGER_MAX_ANGLE-INDEX_FINGER_MIN_ANGLE)
+                        middle_finger_closure = max(min(middle_finger_angle, MIDDLE_FINGER_MAX_ANGLE), MIDDLE_FINGER_MIN_ANGLE)/(MIDDLE_FINGER_MAX_ANGLE-MIDDLE_FINGER_MIN_ANGLE)
+
+                        if hand == "Right":
+                            self.right_index_finger_closure = index_finger_closure
+                            self.right_middle_finger_closure = middle_finger_closure
+                        elif hand == "Left":
+                            self.left_index_finger_closure = index_finger_closure
+                            self.left_middle_finger_closure = middle_finger_closure
+
+                        # index_lm = landmarks[8]
+                        # cv2.putText(mp_image_np, str(angle), (int(index_lm.x * width), int(index_lm.y * height)), cv2.FONT_HERSHEY_SIMPLEX,  # Font type
+                        #  1,                         # Font scale
+                        #  (0, 255, 0),               # Text color (green)
+                        #  2,                         # Thickness
+                        #  cv2.LINE_AA)
 
                         # solutions.drawing_utils.draw_landmarks(
                         #     mp_image_np,
