@@ -1,3 +1,5 @@
+from typing import Tuple, Any
+
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -12,10 +14,24 @@ HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
 HandLandmarkerResult = mp.tasks.vision.HandLandmarkerResult
 VisionRunningMode = mp.tasks.vision.RunningMode
 
+#angle tolerances
 INDEX_FINGER_MAX_ANGLE = 80
 INDEX_FINGER_MIN_ANGLE = 25
 MIDDLE_FINGER_MAX_ANGLE = 80
 MIDDLE_FINGER_MIN_ANGLE = 25
+
+#Circle Sizes
+MAX_CIRCLE_SIZE = 10
+MIN_CIRCLE_SIZE = 2
+
+
+def draw_line_between_points(point1: NormalizedLandmark, point2: NormalizedLandmark, frame: cv2.Mat, image: np.ndarray[Any, np.dtype], color: Tuple[int, int, int], thickness: int):
+    height, width, depth = frame.shape
+
+    p1 = (int(point1.x * width), int(point1.y * height))
+    p2 = (int(point2.x * width), int(point2.y * height))
+    cv2.line(image, p1, p2, color, thickness)
+
 
 class HandTracker:
     def __init__(self, model_path: str, camera_size_factor:int=0.6):
@@ -35,6 +51,9 @@ class HandTracker:
         self.right_index_finger_closure = 0
         self.left_middle_finger_closure = 0
         self.right_middle_finger_closure = 0
+        self.distance_between_thumbs = 1
+
+        self.looping = False
 
         # Setup the OpenCV window
         cv2.namedWindow("Hand Tracking")
@@ -88,9 +107,9 @@ class HandTracker:
                 else:
                     landmarks = result.hand_landmarks[0]
 
-                for landmark in landmarks:
-                    color = hand == "Right" and (0, 0, 255) or (0, 255, 0)
-                    cv2.circle(mp_image_np, (int(landmark.x * width), int(landmark.y * height)), 10, color, cv2.FILLED)
+                # for landmark in landmarks:
+                #     color = hand == "Right" and (0, 0, 255) or (0, 255, 0)
+                #     cv2.circle(mp_image_np, (int(landmark.x * width), int(landmark.y * height)), 10, color, cv2.FILLED)
 
                 # joints of importance
                 thumb_tip = landmarks[4]
@@ -114,8 +133,34 @@ class HandTracker:
                     self.right_index_finger_closure = index_finger_closure
                     self.right_middle_finger_closure = middle_finger_closure
                 elif hand == "Right":
-                    # print(index_finger_angle)
                     self.left_index_finger_closure = index_finger_closure
                     self.left_middle_finger_closure = middle_finger_closure
+
+                #visual stuff
+                index_finger_colour = value_to_color(index_finger_closure, "magma")
+                middle_finger_colour = value_to_color(middle_finger_closure)
+
+                index_finger_circle_size = int(lerp(MIN_CIRCLE_SIZE, MAX_CIRCLE_SIZE, index_finger_closure))
+                middle_finger_circle_size = int(lerp(MIN_CIRCLE_SIZE, MAX_CIRCLE_SIZE, middle_finger_closure))
+
+                #drawing
+                if index_finger_closure > 0:
+                    cv2.circle(mp_image_np, (int(index_tip.x * width), int(index_tip.y * height)),
+                               index_finger_circle_size, index_finger_colour, cv2.FILLED)
+                    draw_line_between_points(thumb_tip, index_tip, frame, mp_image_np, index_finger_colour, 5)
+
+                if middle_finger_closure > 0:
+                    cv2.circle(mp_image_np, (int(middle_tip.x * width), int(middle_tip.y * height)),
+                               middle_finger_circle_size, middle_finger_colour, cv2.FILLED)
+                    draw_line_between_points(thumb_tip, middle_tip, frame, mp_image_np, middle_finger_colour, 5)
+
+            if len(result.hand_landmarks) == 2:
+                mark1 = result.hand_landmarks[0]
+                mark2 = result.hand_landmarks[1]
+
+                thumb1 = mark1[4]
+                thumb2 = mark2[4]
+
+                self.distance_between_thumbs = get_distance_between_points(thumb1, thumb2)
 
         cv2.imshow("Hand Tracking", mp_image_np)

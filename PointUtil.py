@@ -14,13 +14,6 @@ def convert_to_pixels(point, frame):
     return (int(point.x * w), int(point.y * h))
 
 
-# def get_distance(l0, l1) -> float:
-#     return sqrt (
-#         (l0.x - l1.x) ** 2 +
-#         (l0.y - l1.y) ** 2 +
-#         (l0.z - l1.z) ** 2
-#     )
-
 def get_distance(l0, l1) -> float:
     if len(l0) == 2:
         return sqrt(
@@ -48,18 +41,9 @@ def lerp(a, b, t):
     return (1 - t) * a + t * b
 
 
-def value_to_color(value, cmap_name='plasma '):
+def value_to_color(value, cmap_name='viridis'):
     """
     Map a float to a color on a gradient.
-
-    Args:
-        value (float): The input value to map.
-        vmin (float): Minimum value of the range.
-        vmax (float): Maximum value of the range.
-        cmap_name (str): Colormap name (e.g., 'viridis', 'plasma', etc.).
-
-    Returns:
-        str: A color in HEX format.
     """
 
     # Get the colormap
@@ -102,3 +86,6 @@ def get_angle_between_points(end1: NormalizedLandmark, end2: NormalizedLandmark,
     angle = degrees(acos(dot_product))
 
     return angle
+
+def get_distance_between_points(point1: NormalizedLandmark, point2: NormalizedLandmark):
+    return sqrt((point1.x - point2.x) ** 2 + (point1.y - point2.y) ** 2 + (point1.z - point2.z) ** 2)
