@@ -22,6 +22,7 @@ class StemPlayer(object):
         self._loop_start_time = 0
         self._loop_length = 1
         self._loop_offset = 0
+        self._beat_duration = 0
 
         #load song data
         with open(f"Stems/{song_name}/data.json", "r") as file:
@@ -31,7 +32,7 @@ class StemPlayer(object):
             self.time_sig = data["time_sig"]
 
             beat_dur = 60/self.bpm
-            self._loop_length = beat_dur * int(self.time_sig[0]) + 0.05 #accounts for errors of user
+            self._loop_length = beat_dur * int(self.time_sig[0])
 
         # Initialize the pygame mixer
         pygame.mixer.init()
@@ -81,15 +82,16 @@ class StemPlayer(object):
 
     def stop_loop(self):
         self.is_looping = False
-        #play new stems with a fade in to account for old loops
-        #create a thread to cancel the loop
+
         now = time.time()
         loop_time = now - self._loop_start_time
-        pos_in_loop = loop_time%self._loop_length
+        loops = loop_time // self._loop_length
 
-        self._loop_offset += loop_time
-        print(now, self._start_time, self._loop_offset)
-        splice_time = int(now - self._start_time - self._loop_offset) * 1000
+        # self._loop_offset +=
+        self._loop_offset += (loops + 1) * self._loop_length
+        splice_time = int((now - self._start_time - self._loop_offset) * 1000)
+
+        print(f"splice starts at {splice_time}")
 
 
         for stem_name in STEMS:
@@ -116,4 +118,5 @@ class StemPlayer(object):
 try:
     os.mkdir(LOOPS_DIR)
 except FileExistsError:
-    print("Loops directory already exists")
+    # print("Loops directory already exists")
+    pass

@@ -11,7 +11,7 @@ def convert_to_pixels(point, frame):
     h, w, d = frame.shape
 
     # , int(point.z * d)
-    return (int(point.x * w), int(point.y * h))
+    return int(point.x * w), int(point.y * h)
 
 
 def get_distance(l0, l1) -> float:
@@ -57,7 +57,8 @@ def value_to_color(value, cmap_name='viridis'):
     rgba = cmap(normalized_value)
 
     # print(rgba)
-    return (rgba[0] * 255, rgba[1] * 255, rgba[2] * 255)
+    # return rgba[0] * 255, rgba[1] * 255, rgba[2] * 255
+    return rgba[2] * 255, rgba[1] * 255, rgba[0] * 255
 
     # # Convert RGBA to HEX
     # hex_color = mcolors.to_hex(rgba)

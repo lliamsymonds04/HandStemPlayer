@@ -6,6 +6,8 @@ import numpy as np
 import pyautogui
 import time
 
+from sympy.physics.vector import frame
+
 from PointUtil import *
 
 BaseOptions = mp.tasks.BaseOptions
@@ -34,7 +36,7 @@ def draw_line_between_points(point1: NormalizedLandmark, point2: NormalizedLandm
 
 
 class HandTracker:
-    def __init__(self, model_path: str, camera_size_factor:int=0.6):
+    def __init__(self, model_path: str, camera_size_factor:float=0.6):
         self.model_path = model_path
         self.camera_size_factor = camera_size_factor
         self.screen_width, self.screen_height = pyautogui.size()
@@ -46,7 +48,7 @@ class HandTracker:
         self.mp_drawing = mp.solutions.drawing_utils
         self.landmark_result = None
 
-        # Setup the finger variables
+        # Set up the finger variables
         self.left_index_finger_closure = 0
         self.right_index_finger_closure = 0
         self.left_middle_finger_closure = 0
@@ -55,12 +57,22 @@ class HandTracker:
 
         self.looping = False
 
-        # Setup the OpenCV window
-        cv2.namedWindow("Hand Tracking")
-        cv2.resizeWindow("Hand Tracking", int(self.screen_width * self.camera_size_factor),
-                         int(self.screen_height * self.camera_size_factor))
-        cv2.moveWindow("Hand Tracking", int(self.screen_width * (1 - self.camera_size_factor) * 0.5),
-                       int(self.screen_height * (1 - self.camera_size_factor) * 0.5))
+        # Set up the OpenCV window
+        cv2.namedWindow("Hand Stem Player")
+
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, int(self.screen_width * self.camera_size_factor))
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, int(self.screen_height * self.camera_size_factor))
+
+        frame_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        # cv2.resizeWindow("Hand Stem Player", int(self.screen_width * self.camera_size_factor),
+        #                  int(self.screen_height * self.camera_size_factor))
+        # cv2.moveWindow("Hand Stem Player", int((self.screen_width - frame_width) * 0.5),
+        #                max(int((self.screen_height - frame_height) * 0.25),0))
+
+        cv2.resizeWindow("Hand Stem Player", frame_width, frame_height)
+        # cv2.imshow("Hand Stem Player", frame)
+
 
         options = mp.tasks.vision.HandLandmarkerOptions(
             base_options=mp.tasks.BaseOptions(model_asset_path=self.model_path),
@@ -107,10 +119,6 @@ class HandTracker:
                 else:
                     landmarks = result.hand_landmarks[0]
 
-                # for landmark in landmarks:
-                #     color = hand == "Right" and (0, 0, 255) or (0, 255, 0)
-                #     cv2.circle(mp_image_np, (int(landmark.x * width), int(landmark.y * height)), 10, color, cv2.FILLED)
-
                 # joints of importance
                 thumb_tip = landmarks[4]
                 index_tip = landmarks[8]
@@ -137,8 +145,8 @@ class HandTracker:
                     self.left_middle_finger_closure = middle_finger_closure
 
                 #visual stuff
-                index_finger_colour = value_to_color(index_finger_closure, "magma")
-                middle_finger_colour = value_to_color(middle_finger_closure)
+                index_finger_colour = value_to_color(index_finger_closure, "winter")
+                middle_finger_colour = value_to_color(middle_finger_closure, "summer")
 
                 index_finger_circle_size = int(lerp(MIN_CIRCLE_SIZE, MAX_CIRCLE_SIZE, index_finger_closure))
                 middle_finger_circle_size = int(lerp(MIN_CIRCLE_SIZE, MAX_CIRCLE_SIZE, middle_finger_closure))
@@ -163,4 +171,6 @@ class HandTracker:
 
                 self.distance_between_thumbs = get_distance_between_points(thumb1, thumb2)
 
-        cv2.imshow("Hand Tracking", mp_image_np)
+        cv2.imshow("Hand Stem Player", mp_image_np)
+
+
