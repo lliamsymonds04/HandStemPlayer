@@ -6,7 +6,7 @@ import shutil
 import stat
 import ctypes
 
-def separate_music(file_path: str, song_name: str, bpm: str, time_sig: str, ):
+def separate_music(file_path: str, song_name: str, bpm: str, time_sig: str, high_quality: bool = False):
     output_dir = f"Stems/{song_name.upper()}"
     os.makedirs(output_dir, exist_ok=True)
 
@@ -16,7 +16,11 @@ def separate_music(file_path: str, song_name: str, bpm: str, time_sig: str, ):
 
         formatted_path = Path(file_path).as_posix()
 
-        command = f'demucs --out "{output_dir}" {formatted_path}' #-n htdemucs_ft
+        command = ""
+        if high_quality:
+            command = f'demucs --out "{output_dir}" -n htdemucs_ft {formatted_path}'
+        else:
+            f'demucs --out "{output_dir}" {formatted_path}'
         os.system(command)
 
         #move the stems out from the inside folder to the outer folder
@@ -48,4 +52,5 @@ file_path = input("Enter the path to the audio file: ")
 song_name = input("Enter the name of the song: ")
 bpm = input("Enter the bpm: ")
 time_sig = input("Enter the time signature (ie '4/4'): ")
-separate_music(file_path, song_name, bpm, time_sig)
+high_quality = input("Enter the high quality (ie 'y' or 'n'): ").lower() == "y"
+separate_music(file_path, song_name, bpm, time_sig, high_quality)
