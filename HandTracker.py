@@ -56,23 +56,18 @@ class HandTracker:
         self.distance_between_thumbs = 1
 
         self.looping = False
+        self.active = True
 
         # Set up the OpenCV window
-        cv2.namedWindow("Hand Stem Player")
+        cv2.namedWindow("Hand Stem Player", cv2.WINDOW_NORMAL)
 
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, int(self.screen_width * self.camera_size_factor))
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, int(self.screen_height * self.camera_size_factor))
 
         frame_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         frame_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        # cv2.resizeWindow("Hand Stem Player", int(self.screen_width * self.camera_size_factor),
-        #                  int(self.screen_height * self.camera_size_factor))
-        # cv2.moveWindow("Hand Stem Player", int((self.screen_width - frame_width) * 0.5),
-        #                max(int((self.screen_height - frame_height) * 0.25),0))
 
         cv2.resizeWindow("Hand Stem Player", frame_width, frame_height)
-        # cv2.imshow("Hand Stem Player", frame)
-
 
         options = mp.tasks.vision.HandLandmarkerOptions(
             base_options=mp.tasks.BaseOptions(model_asset_path=self.model_path),
@@ -91,6 +86,10 @@ class HandTracker:
         self.landmark_result = result
 
     def update(self):
+        if cv2.getWindowProperty("Hand Stem Player", cv2.WND_PROP_VISIBLE) < 1:
+            self.active = False
+            return
+
         ret, frame = self.cap.read()
         if not ret:
             print('Ignoring empty camera frame.')

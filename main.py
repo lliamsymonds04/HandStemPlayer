@@ -34,7 +34,7 @@ if __name__ == "__main__":
     hand_tracker = HandTracker(model_path='Models\\hand_landmarker.task', camera_size_factor=0.6)
     stem_player = StemPlayer(song_name)
 
-    while hand_tracker.cap.isOpened():
+    while hand_tracker.cap.isOpened() and hand_tracker.active:
         hand_tracker.update()
 
         #handle stem volumes
