@@ -3,7 +3,6 @@ import subprocess
 import os
 from pathlib import Path
 import shutil
-import stat
 import ctypes
 
 def separate_music(file_path: str, song_name: str, bpm: str, time_sig: str, high_quality: bool = False):
@@ -40,17 +39,11 @@ def separate_music(file_path: str, song_name: str, bpm: str, time_sig: str, high
     except subprocess.CalledProcessError as e:
         print(f"Error during Demucs execution: {e}")
 
-    # try:
-    #     if demucs_folder != "":
-    #         os.chmod(demucs_folder, stat.S_IWRITE)
-    #         os.remove(demucs_folder)
-    # except PermissionError as e:
-    #     print("failed to remove the temp folder")
 
 # Input file
 file_path = input("Enter the path to the audio file: ")
 song_name = input("Enter the name of the song: ")
 bpm = input("Enter the bpm: ")
 time_sig = input("Enter the time signature (ie '4/4'): ")
-high_quality = input("Enter the high quality (ie 'y' or 'n'): ").lower() == "y"
+high_quality = input("High quality mode (ie 'y' or 'n'): ").lower() == "y"
 separate_music(file_path, song_name, bpm, time_sig, high_quality)
