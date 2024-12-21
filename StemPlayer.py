@@ -87,11 +87,8 @@ class StemPlayer(object):
         loop_time = now - self._loop_start_time
         loops = loop_time // self._loop_length
 
-        # self._loop_offset +=
         self._loop_offset += (loops + 1) * self._loop_length
         splice_time = int((now - self._start_time - self._loop_offset) * 1000)
-
-        print(f"splice starts at {splice_time}")
 
 
         for stem_name in STEMS:
