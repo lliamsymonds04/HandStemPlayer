@@ -36,6 +36,8 @@ def separate_music(file_path: str, song_name: str, bpm: str, time_sig: str, high
         with open(output_dir + "/data.json", "w") as file:
             json.dump({"bpm": int(bpm), "time_sig": time_sig}, file)
 
+        print("Successfully separated stems, run main to play the song.")
+
     except subprocess.CalledProcessError as e:
         print(f"Error during Demucs execution: {e}")
 
