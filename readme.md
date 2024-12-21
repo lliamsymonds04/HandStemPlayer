@@ -4,6 +4,10 @@
 * Using the camera, this project tracks the hands to control the stems
 * By pinching the fingers together you can adjust stem volumes on the fly
 * This stem player supports isolating bass, drums, vocals and backing audio
+* Audio is seperated using demucs
+
+## Demo
+[![YouTube](http://i.ytimg.com/vi/NQgYAUxvRFQ/hqdefault.jpg)](https://www.youtube.com/watch?v=NQgYAUxvRFQ)
 
 ## Downloading
 
@@ -13,13 +17,12 @@
 - install demucs and ffmpeg
 - run `pip install -r requirements.txt`
 
-## Demo
-[![YouTube](http://i.ytimg.com/vi/NQgYAUxvRFQ/hqdefault.jpg)](https://www.youtube.com/watch?v=NQgYAUxvRFQ)
+
 
 ## Usage
 
 
-* Run **StemSeparation.py** and follow the prompts
+* Run **StemSeparation.py** and follow the prompts, you will need to provide a song file
 * Run **main.py** and follow the prompts
 * Hold hands to camera and enjoy!
 ---
